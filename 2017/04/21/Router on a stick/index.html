@@ -1,0 +1,267 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>单臂路由实验 (利用ensp实现) | eeykuhs</title>
+  <meta name="author" content="我系一个大蘑菇">
+  
+  <meta name="description" content="最近利用ensp实现单臂路由实验，首先我们来看看网络拓扑图：">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="单臂路由实验 (利用ensp实现)"/>
+  <meta property="og:site_name" content="eeykuhs"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/bootstrap.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">eeykuhs</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>归档
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>关于
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> 单臂路由实验 (利用ensp实现)</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <h4 id="最近利用ensp实现单臂路由实验，首先我们来看看网络拓扑图："><a href="#最近利用ensp实现单臂路由实验，首先我们来看看网络拓扑图：" class="headerlink" title="最近利用ensp实现单臂路由实验，首先我们来看看网络拓扑图："></a>最近利用ensp实现单臂路由实验，首先我们来看看网络拓扑图：</h4><a id="more"></a>
+<p><img src="/images/Router on a stick.jpg" alt="&quot;网络拓扑&quot;"></p>
+<h4 id="以下便是我的实验步骤："><a href="#以下便是我的实验步骤：" class="headerlink" title="以下便是我的实验步骤："></a>以下便是我的实验步骤：</h4><ul>
+<li>首先，我们忽略掉拓扑图的建立过程（相信这不会难倒大家），直接进入到配置过程。</li>
+</ul>
+<p>　我们首先要讲4台pc与交换机之间的接口类型设置为access,需要我们进入到交换机的配置界面，我们以pc1（CLIENT 1）为例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">interface Ethernet 0/0/1  //进入接口</div><div class="line">port link-type access     //设置接口类型为access</div><div class="line">q                         //退出</div><div class="line">save                      //保存</div></pre></td></tr></table></figure>
+<ul>
+<li>在两台交换机上分别建立vlan 10与vlan 20,以交换机LSW1为例：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vlan batch vlan 10 20     //批建立vlan 10与vlan 20</div></pre></td></tr></table></figure>
+<ul>
+<li>将pc划进你需要的vlan，还是以CLIENT 1为例：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">interface Ethernet 0/0/1  //进入接口</div><div class="line">port default vlan 10      //将接口划进vlan 10</div></pre></td></tr></table></figure>
+<ul>
+<li>当这时你给4台pc都分配了ip和vlan以后，你就会发现无论哪一台pc是ping不通其他任何一台pc的（即使是同一vlan下的pc），这是什么原因呢？</li>
+</ul>
+<p>　这是因为我们两台交换机之间的接口Ethernet 0/0/3还需要配置，在两台交换机上都要配置以下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">interface Ethernet 0/0/3</div><div class="line">port link-type trunk             //将接口类型设置为trunk</div><div class="line">port trunk allow-pass vlan all   //允许所有vlan通过</div></pre></td></tr></table></figure>
+<p>　这时我们已经实现了我们划分vlan的目的，而我们划分vlan的目的就是为了分割广播域，从而有效的防止广播风暴，可是这样我们又带来了另外一个问题：我们的vlan间应该如何通信？这时我们就加入了一个路由，也就是单臂路由。</p>
+<ul>
+<li>我们从拓扑图中都看出路由与LSW1交换机之间只有一个连接，可是我们的实验目的需要不仅仅是vlan间可以通信，而且4台pc都可以通过路由作为网关连接外网，但是4台pc已经被我们分成了两个网段，这时就带来了一个概念称作路由子接口，以实现我们的目的,我们进入到路由的配置界面：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">interface G 0/0/0.1             //进入接口</div><div class="line">dot1q termination vid 10        //设置vlan10的封装协议类型为802.1q</div><div class="line">ip address 192.168.1.1/24       //设置子接口的ip与子网掩码</div><div class="line">arp broadcast enable            //开启子接口arp广播</div></pre></td></tr></table></figure>
+<p><strong>注意</strong>：以上代码只是实现了vlan 10的配置，还需要进入interface G 0/0/0.2 配置vlan，方法同上。</p>
+<ul>
+<li>最后只需要在LSW1的Ethernet 0/0/4接口同样的配置接口类型为trunk，将4台pc的网关设置为路由ip，便可。</li>
+</ul>
+<h4 id="结语："><a href="#结语：" class="headerlink" title="结语："></a>结语：</h4><p>　我们划分vlan的目的不是为了不让各个pc之间不能通信，而是为了分割广播域从而有效的防止广播风暴，而各个vlan的通信以及连接外网则通过我们的单臂路由实现，以达到优化网络的目的。</p>
+	  
+	</div>
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+		
+          <li class="prev disabled"><a><i class="fa fa-arrow-circle-o-left"></i>上一頁</a></li>
+        
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2017/03/25/dedao/" class="alignright next">下一頁<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+
+  
+</section>
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2017-04-21 
+	</div>
+	
+
+	<!-- categories -->
+    
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/network/">network<span>1</span></a></li>
+    </ul>
+	</div>
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  &copy; 2017 我系一个大蘑菇
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+</body>
+   </html>
